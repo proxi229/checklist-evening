@@ -1,0 +1,1181 @@
+```html
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Чек-лист чергування</title>
+
+    <style>
+        :root {
+            --bg: #0b0c0d;
+            --card: #151719;
+            --card-hover: #1b1d20;
+            --border: #292c30;
+            --text: #f1f1f1;
+            --muted: #8d9095;
+            --gold: #c8a85b;
+            --gold-light: #e0c77c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background: var(--bg);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at top,
+                    #17181a 0%,
+                    var(--bg) 45%
+                );
+
+            color: var(--text);
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+        }
+
+        /* =========================
+           ОСНОВНИЙ КОНТЕЙНЕР
+        ========================= */
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+
+            margin: 0 auto;
+
+            padding:
+                28px
+                18px
+                190px;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            margin-bottom: 28px;
+        }
+
+        .title {
+            margin: 0;
+
+            font-size: 28px;
+            font-weight: 700;
+
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            margin-top: 7px;
+
+            color: var(--muted);
+
+            font-size: 15px;
+        }
+
+        .datetime {
+            margin-top: 14px;
+
+            color: var(--gold);
+
+            font-size: 13px;
+            font-weight: 600;
+
+            letter-spacing: 0.4px;
+        }
+
+        /* =========================
+           SECTIONS
+        ========================= */
+
+        .section {
+            margin-bottom: 22px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 9px;
+
+            padding: 0 3px;
+        }
+
+        .section-title {
+            color: var(--gold-light);
+
+            font-size: 13px;
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .section-progress {
+            color: var(--muted);
+
+            font-size: 12px;
+        }
+
+        .section-progress.done {
+            color: var(--gold);
+        }
+
+        /* =========================
+           ITEMS
+        ========================= */
+
+        .items {
+            overflow: hidden;
+
+            background: var(--card);
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+
+            min-height: 55px;
+
+            padding: 13px 15px;
+
+            gap: 12px;
+
+            border-bottom: 1px solid var(--border);
+
+            cursor: pointer;
+
+            user-select: none;
+
+            transition:
+                background 0.15s ease,
+                transform 0.1s ease;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item:hover {
+            background: var(--card-hover);
+        }
+
+        .item:active {
+            transform: scale(0.995);
+        }
+
+        .item input {
+            display: none;
+        }
+
+        /* =========================
+           CHECKBOX
+        ========================= */
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 23px;
+            height: 23px;
+
+            flex-shrink: 0;
+
+            border: 1.5px solid #555960;
+
+            border-radius: 6px;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .item input:checked + .checkbox {
+            background: var(--gold);
+
+            border-color: var(--gold);
+        }
+
+        .item input:checked + .checkbox::after {
+            content: "✓";
+
+            color: #111;
+
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .item-text {
+            color: var(--text);
+
+            font-size: 15px;
+
+            transition:
+                color 0.2s ease,
+                text-decoration 0.2s ease;
+        }
+
+        .item input:checked ~ .item-text {
+            color: #777b80;
+
+            text-decoration: line-through;
+            text-decoration-color: #555;
+        }
+
+        /* =========================
+           BOTTOM PANEL
+        ========================= */
+
+        .progress-panel {
+            position: fixed;
+
+            left: 50%;
+            bottom: 0;
+
+            transform: translateX(-50%);
+
+            width: 100%;
+            max-width: 620px;
+
+            padding:
+                15px
+                18px
+                calc(15px + env(safe-area-inset-bottom));
+
+            background: rgba(11, 12, 13, 0.94);
+
+            border-top: 1px solid var(--border);
+
+            backdrop-filter: blur(14px);
+
+            z-index: 100;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+
+            color: var(--muted);
+
+            font-size: 13px;
+        }
+
+        #progressPercent {
+            color: var(--gold);
+
+            font-weight: 700;
+        }
+
+        /* =========================
+           PROGRESS BAR
+        ========================= */
+
+        .progress-bar {
+            width: 100%;
+            height: 7px;
+
+            overflow: hidden;
+
+            background: #292b2e;
+
+            border-radius: 10px;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+
+            background: var(--gold);
+
+            border-radius: 10px;
+
+            transition:
+                width 0.3s ease;
+        }
+
+        /* =========================
+           COMPLETE
+        ========================= */
+
+        .complete {
+            display: none;
+
+            margin-top: 9px;
+
+            color: var(--gold-light);
+
+            text-align: center;
+
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .complete.show {
+            display: block;
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .buttons {
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 12px;
+        }
+
+        button {
+            flex: 1;
+
+            min-height: 42px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+        .screenshot-button {
+            background: var(--gold);
+
+            border: 1px solid var(--gold);
+
+            color: #111;
+
+            transition:
+                background 0.15s ease,
+                transform 0.1s ease;
+        }
+
+        .screenshot-button:hover {
+            background: var(--gold-light);
+        }
+
+        .screenshot-button:active {
+            transform: scale(0.98);
+        }
+
+        .reset-button {
+            background: transparent;
+
+            border: 1px solid var(--border);
+
+            color: var(--muted);
+        }
+
+        .reset-button:hover {
+            background: #17191b;
+
+            color: var(--text);
+        }
+
+        /* =========================
+           SCREENSHOT MODE
+        ========================= */
+
+        body.screenshot-mode .progress-panel {
+            display: none;
+        }
+
+        body.screenshot-mode .container {
+            padding-bottom: 30px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 400px) {
+
+            .container {
+                padding:
+                    23px
+                    12px
+                    190px;
+            }
+
+            .title {
+                font-size: 25px;
+            }
+
+            .item {
+                min-height: 53px;
+
+                padding: 12px;
+            }
+
+            .item-text {
+                font-size: 14px;
+            }
+
+            .buttons {
+                gap: 6px;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="container" id="checklist">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1 class="title">
+            Чек-лист
+        </h1>
+
+        <div class="subtitle">
+            Здача / прийом чергування
+        </div>
+
+        <div class="datetime" id="datetime">
+            Завантаження...
+        </div>
+
+    </header>
+
+
+    <!-- =====================
+         КОЛИ ВСІ ПІШЛИ
+    ====================== -->
+
+    <section
+        class="section"
+        data-section="departure"
+    >
+
+        <div class="section-header">
+
+            <div class="section-title">
+                Коли всі пішли
+            </div>
+
+            <div
+                class="section-progress"
+                id="progress-departure"
+            >
+                0 / 3
+            </div>
+
+        </div>
+
+
+        <div class="items">
+
+            <label class="item">
+
+                <input
+                    type="checkbox"
+                    data-id="logistics-room"
+                    data-section="departure"
+                >
+
+                <span class="checkbox"></span>
+
+                <span class="item-text">
+                    Кімната логістів (2 поверх)
+                </span>
+
+            </label>
+
+
+            <label class="item">
+
+                <input
+                    type="checkbox"
+                    data-id="intermediate-doors"
+                    data-section="departure"
+                >
+
+                <span class="checkbox"></span>
+
+                <span class="item-text">
+                    Проміжні двері — зачинені
+                </span>
+
+            </label>
+
+
+            <label class="item">
+
+                <input
+                    type="checkbox"
+                    data-id="main-entrance"
+                    data-section="departure"
+                >
+
+                <span class="checkbox"></span>
+
+                <span class="item-text">
+                    Головний вхід — зачинений
+                </span>
+
+            </label>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================
+         ОБЛАДНАННЯ
+    ====================== -->
+
+    <section
+        class="section"
+        data-section="equipment"
+    >
+
+        <div class="section-header">
+
+            <div class="section-title">
+                Обладнання
+            </div>
+
+            <div
+                class="section-progress"
+                id="progress-equipment"
+            >
+                0 / 1
+            </div>
+
+        </div>
+
+
+        <div class="items">
+
+            <label class="item">
+
+                <input
+                    type="checkbox"
+                    data-id="equipment-off"
+                    data-section="equipment"
+                >
+
+                <span class="checkbox"></span>
+
+                <span class="item-text">
+                    Перевірити, щоб було вимкнено
+                </span>
+
+            </label>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================
+         ДРУКАРНЯ
+    ====================== -->
+
+    <section
+        class="section"
+        data-section="printing"
+    >
+
+        <div class="section-header">
+
+            <div class="section-title">
+                Друкарня
+            </div>
+
+            <div
+                class="section-progress"
+                id="progress-printing"
+            >
+                0 / 1
+            </div>
+
+        </div>
+
+
+        <div class="items">
+
+            <label class="item">
+
+                <input
+                    type="checkbox"
+                    data-id="printing-errors"
+                    data-section="printing"
+                >
+
+                <span class="checkbox"></span>
+
+                <span class="item-text">
+                    Перевірка на критичні помилки
+                </span>
+
+            </label>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================
+     НИЖНЯ ПАНЕЛЬ
+========================= -->
+
+<div class="progress-panel">
+
+    <div class="progress-info">
+
+        <span id="progressText">
+            0 / 5 виконано
+        </span>
+
+        <span id="progressPercent">
+            0%
+        </span>
+
+    </div>
+
+
+    <div class="progress-bar">
+
+        <div
+            class="progress-fill"
+            id="progressFill"
+        ></div>
+
+    </div>
+
+
+    <div
+        class="complete"
+        id="completeMessage"
+    >
+        ✓ Чергування прийнято
+    </div>
+
+
+    <div class="buttons">
+
+        <button
+            class="screenshot-button"
+            id="screenshotButton"
+        >
+            Зберегти звіт
+        </button>
+
+        <button
+            class="reset-button"
+            id="resetButton"
+        >
+            Скинути
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     HTML2CANVAS
+========================= -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+</script>
+
+
+<script>
+
+    const STORAGE_KEY =
+        "dutyChecklist_v2";
+
+
+    const checkboxes =
+        document.querySelectorAll(
+            'input[type="checkbox"]'
+        );
+
+
+    const progressText =
+        document.getElementById(
+            "progressText"
+        );
+
+
+    const progressPercent =
+        document.getElementById(
+            "progressPercent"
+        );
+
+
+    const progressFill =
+        document.getElementById(
+            "progressFill"
+        );
+
+
+    const completeMessage =
+        document.getElementById(
+            "completeMessage"
+        );
+
+
+    const datetime =
+        document.getElementById(
+            "datetime"
+        );
+
+
+    /* =========================
+       ДАТА + ЧАС
+    ========================= */
+
+    function updateDateTime() {
+
+        const now = new Date();
+
+
+        const date =
+            now.toLocaleDateString(
+                "uk-UA",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                }
+            );
+
+
+        const time =
+            now.toLocaleTimeString(
+                "uk-UA",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+
+        datetime.textContent =
+            `${date} • ${time}`;
+
+    }
+
+
+    updateDateTime();
+
+
+    /* =========================
+       ЗАВАНТАЖЕННЯ
+    ========================= */
+
+    function loadChecklist() {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE_KEY
+                ) || "{}"
+            );
+
+
+        checkboxes.forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    saved[
+                        checkbox.dataset.id
+                    ] === true;
+
+            }
+        );
+
+
+        updateProgress();
+
+    }
+
+
+    /* =========================
+       ЗБЕРЕЖЕННЯ
+    ========================= */
+
+    function saveChecklist() {
+
+        const state = {};
+
+
+        checkboxes.forEach(
+            checkbox => {
+
+                state[
+                    checkbox.dataset.id
+                ] =
+                    checkbox.checked;
+
+            }
+        );
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(state)
+        );
+
+    }
+
+
+    /* =========================
+       ПРОГРЕС
+    ========================= */
+
+    function updateProgress() {
+
+        const total =
+            checkboxes.length;
+
+
+        const completed =
+            [...checkboxes]
+                .filter(
+                    checkbox =>
+                        checkbox.checked
+                )
+                .length;
+
+
+        const percent =
+            Math.round(
+                (completed / total) * 100
+            );
+
+
+        progressText.textContent =
+            `${completed} / ${total} виконано`;
+
+
+        progressPercent.textContent =
+            `${percent}%`;
+
+
+        progressFill.style.width =
+            `${percent}%`;
+
+
+        if (percent === 100) {
+
+            completeMessage.classList.add(
+                "show"
+            );
+
+        } else {
+
+            completeMessage.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        /* =====================
+           ПРОГРЕС КАТЕГОРІЙ
+        ===================== */
+
+        const sections = [
+            "departure",
+            "equipment",
+            "printing"
+        ];
+
+
+        sections.forEach(
+            section => {
+
+                const items =
+                    document.querySelectorAll(
+                        `input[data-section="${section}"]`
+                    );
+
+
+                const done =
+                    [...items]
+                        .filter(
+                            item =>
+                                item.checked
+                        )
+                        .length;
+
+
+                const indicator =
+                    document.getElementById(
+                        `progress-${section}`
+                    );
+
+
+                indicator.textContent =
+                    `${done} / ${items.length}`;
+
+
+                if (
+                    done === items.length
+                ) {
+
+                    indicator.classList.add(
+                        "done"
+                    );
+
+                } else {
+
+                    indicator.classList.remove(
+                        "done"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================
+       CHECKBOX EVENTS
+    ========================= */
+
+    checkboxes.forEach(
+        checkbox => {
+
+            checkbox.addEventListener(
+                "change",
+                () => {
+
+                    saveChecklist();
+
+                    updateProgress();
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================
+       RESET
+    ========================= */
+
+    document
+        .getElementById("resetButton")
+        .addEventListener(
+            "click",
+            () => {
+
+                const confirmed =
+                    confirm(
+                        "Скинути весь чек-лист?"
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                checkboxes.forEach(
+                    checkbox => {
+
+                        checkbox.checked =
+                            false;
+
+                    }
+                );
+
+
+                localStorage.removeItem(
+                    STORAGE_KEY
+                );
+
+
+                updateProgress();
+
+            }
+        );
+
+
+    /* =========================
+       SCREENSHOT / PNG
+    ========================= */
+
+    document
+        .getElementById("screenshotButton")
+        .addEventListener(
+            "click",
+            async () => {
+
+                const button =
+                    document.getElementById(
+                        "screenshotButton"
+                    );
+
+
+                button.textContent =
+                    "Створення...";
+
+
+                button.disabled =
+                    true;
+
+
+                document.body.classList.add(
+                    "screenshot-mode"
+                );
+
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            150
+                        )
+                );
+
+
+                try {
+
+                    const element =
+                        document.getElementById(
+                            "checklist"
+                        );
+
+
+                    const canvas =
+                        await html2canvas(
+                            element,
+                            {
+                                backgroundColor:
+                                    "#0b0c0d",
+
+                                scale: 2,
+
+                                useCORS: true
+                            }
+                        );
+
+
+                    const link =
+                        document.createElement(
+                            "a"
+                        );
+
+
+                    const now =
+                        new Date();
+
+
+                    const date =
+                        now
+                            .toISOString()
+                            .slice(
+                                0,
+                                10
+                            );
+
+
+                    const time =
+                        now
+                            .toTimeString()
+                            .slice(
+                                0,
+                                5
+                            )
+                            .replace(
+                                ":",
+                                "-"
+                            );
+
+
+                    link.download =
+                        `checklist_${date}_${time}.png`;
+
+
+                    link.href =
+                        canvas.toDataURL(
+                            "image/png"
+                        );
+
+
+                    link.click();
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+
+                    alert(
+                        "Не вдалося створити звіт."
+                    );
+
+                }
+
+
+                document.body.classList.remove(
+                    "screenshot-mode"
+                );
+
+
+                button.textContent =
+                    "Зберегти звіт";
+
+
+                button.disabled =
+                    false;
+
+            }
+        );
+
+
+    /* =========================
+       START
+    ========================= */
+
+    loadChecklist();
+
+</script>
+
+</body>
+</html>
+```
